@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kevin Lin | Portfolio</title>
   <link rel="icon" type="image/png" href="logo.png" />
+  <script data-cfasync="false">
+    // Theme runs immediately in <head> — prevents flash and Cloudflare interference
+    var KL_THEME = 'dark';
+    try { KL_THEME = localStorage.getItem('kl-theme') || 'dark'; } catch(e) {}
+    document.documentElement.classList.add(KL_THEME);
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -438,7 +444,7 @@
   <span>&copy; <span id="yr"></span> Kevin Lin &middot; All rights reserved</span>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false">
   document.getElementById('yr').textContent = new Date().getFullYear();
 
   // Mobile nav
@@ -452,24 +458,15 @@
   });
 
   // Theme toggle
-  var KL_THEME = 'dark';
-
   function applyTheme(t) {
     KL_THEME = t;
     var root = document.documentElement;
+    root.classList.remove('dark', 'light');
+    root.classList.add(t);
     var sun  = document.getElementById('iconSun');
     var moon = document.getElementById('iconMoon');
-    if (t === 'light') {
-      root.classList.remove('dark');
-      root.classList.add('light');
-      if (sun)  sun.style.display  = 'none';
-      if (moon) moon.style.display = 'block';
-    } else {
-      root.classList.remove('light');
-      root.classList.add('dark');
-      if (sun)  sun.style.display  = 'block';
-      if (moon) moon.style.display = 'none';
-    }
+    if (sun)  sun.style.display  = (t === 'dark') ? 'block' : 'none';
+    if (moon) moon.style.display = (t === 'dark') ? 'none'  : 'block';
     try { localStorage.setItem('kl-theme', t); } catch(e) {}
   }
 
@@ -477,10 +474,8 @@
     applyTheme(KL_THEME === 'dark' ? 'light' : 'dark');
   }
 
-  // init on load
-  var saved = 'dark';
-  try { saved = localStorage.getItem('kl-theme') || 'dark'; } catch(e) {}
-  applyTheme(saved);
+  // Sync icons with whatever theme was set in <head>
+  applyTheme(KL_THEME);
 
   // Typewriter
   var nameEl = document.querySelector('.hero-name');

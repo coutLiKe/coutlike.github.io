@@ -249,7 +249,7 @@
     <li><a href="#contact">contact</a></li>
   </ul>
   <div class="nav-right">
-    <button class="theme-btn" id="themeBtn" title="Toggle light/dark mode">
+    <button type="button" class="theme-btn" id="themeBtn" title="Toggle light/dark mode" onclick="toggleTheme()">
       <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="5"/>
         <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
@@ -452,32 +452,35 @@
   });
 
   // Theme toggle
-  var root = document.documentElement;
-  var sun  = document.getElementById('iconSun');
-  var moon = document.getElementById('iconMoon');
+  var KL_THEME = 'dark';
 
   function applyTheme(t) {
+    KL_THEME = t;
+    var root = document.documentElement;
+    var sun  = document.getElementById('iconSun');
+    var moon = document.getElementById('iconMoon');
     if (t === 'light') {
       root.classList.remove('dark');
       root.classList.add('light');
-      sun.style.display  = 'none';
-      moon.style.display = 'block';
+      if (sun)  sun.style.display  = 'none';
+      if (moon) moon.style.display = 'block';
     } else {
       root.classList.remove('light');
       root.classList.add('dark');
-      sun.style.display  = 'block';
-      moon.style.display = 'none';
+      if (sun)  sun.style.display  = 'block';
+      if (moon) moon.style.display = 'none';
     }
     try { localStorage.setItem('kl-theme', t); } catch(e) {}
   }
 
-  var init = 'dark';
-  try { init = localStorage.getItem('kl-theme') || 'dark'; } catch(e) {}
-  applyTheme(init);
+  function toggleTheme() {
+    applyTheme(KL_THEME === 'dark' ? 'light' : 'dark');
+  }
 
-  document.getElementById('themeBtn').addEventListener('click', function() {
-    applyTheme(root.classList.contains('light') ? 'dark' : 'light');
-  });
+  // init on load
+  var saved = 'dark';
+  try { saved = localStorage.getItem('kl-theme') || 'dark'; } catch(e) {}
+  applyTheme(saved);
 
   // Typewriter
   var nameEl = document.querySelector('.hero-name');

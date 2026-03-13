@@ -455,13 +455,19 @@
   var root = document.documentElement;
   var sun  = document.getElementById('iconSun');
   var moon = document.getElementById('iconMoon');
-  var currentTheme = 'dark';
 
   function applyTheme(t) {
-    currentTheme = t;
-    root.className = t;
-    sun.style.display  = (t === 'dark') ? 'block' : 'none';
-    moon.style.display = (t === 'dark') ? 'none'  : 'block';
+    if (t === 'light') {
+      root.classList.remove('dark');
+      root.classList.add('light');
+      sun.style.display  = 'none';
+      moon.style.display = 'block';
+    } else {
+      root.classList.remove('light');
+      root.classList.add('dark');
+      sun.style.display  = 'block';
+      moon.style.display = 'none';
+    }
     try { localStorage.setItem('kl-theme', t); } catch(e) {}
   }
 
@@ -470,7 +476,7 @@
   applyTheme(init);
 
   document.getElementById('themeBtn').addEventListener('click', function() {
-    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    applyTheme(root.classList.contains('light') ? 'dark' : 'light');
   });
 
   // Typewriter

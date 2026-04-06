@@ -5,7 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kevin Lin | Portfolio</title>
   <link rel="icon" type="image/png" href="logo.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <script>
+    // Isolated theme toggle — runs before body, immune to Cloudflare script injection
+    var __isDark = true;
+    try { __isDark = (localStorage.getItem('kl-theme') || 'dark') === 'dark'; } catch(e) {}
+    document.documentElement.setAttribute('data-theme', __isDark ? 'dark' : 'light');
+
+    function __toggleTheme() {
+      __isDark = !__isDark;
+      var t = __isDark ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      document.getElementById('iconSun').style.display  = __isDark ? 'block' : 'none';
+      document.getElementById('iconMoon').style.display = __isDark ? 'none'  : 'block';
+      try { localStorage.setItem('kl-theme', t); } catch(e) {}
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
@@ -249,7 +263,7 @@
     <li><a href="#contact">contact</a></li>
   </ul>
   <div class="nav-right">
-    <button type="button" class="theme-btn" id="themeBtn" title="Toggle light/dark mode">
+    <button type="button" class="theme-btn" id="themeBtn" title="Toggle light/dark mode" onclick="__toggleTheme()">
       <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="5"/>
         <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
@@ -452,29 +466,9 @@
     });
   });
 
-  // ── Theme toggle
-  (function() {
-    var html  = document.documentElement;
-    var btn   = document.getElementById('themeBtn');
-    var sun   = document.getElementById('iconSun');
-    var moon  = document.getElementById('iconMoon');
-    var isDark = true;
-
-    function setTheme(dark) {
-      isDark = dark;
-      html.setAttribute('data-theme', dark ? 'dark' : 'light');
-      sun.style.display  = dark ? 'block' : 'none';
-      moon.style.display = dark ? 'none'  : 'block';
-      try { localStorage.setItem('kl-theme', dark ? 'dark' : 'light'); } catch(e) {}
-    }
-
-    // Read saved preference
-    var saved = 'dark';
-    try { saved = localStorage.getItem('kl-theme') || 'dark'; } catch(e) {}
-    setTheme(saved === 'dark');
-
-    btn.addEventListener('click', function() { setTheme(!isDark); });
-  })();
+  // ── Sync theme icons on load
+  document.getElementById('iconSun').style.display  = __isDark ? 'block' : 'none';
+  document.getElementById('iconMoon').style.display = __isDark ? 'none'  : 'block';
 
   // ── Typewriter
   var nameEl = document.querySelector('.hero-name');

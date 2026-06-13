@@ -30,11 +30,13 @@
       --bg: #000; --bg-alt: #111; --bg-card: #000;
       --border: #2e2e2e; --text: #fff;
       --text-mid: #aaa; --text-dim: #555; --hover-bg: #1c1c1c;
+      --glow: rgba(255,255,255,0.08);
     }
     html[data-theme="light"] {
       --bg: #f5f5f0; --bg-alt: #e8e8e3; --bg-card: #f5f5f0;
       --border: #ccc; --text: #000;
       --text-mid: #444; --text-dim: #999; --hover-bg: #e0e0db;
+      --glow: rgba(0,0,0,0.06);
     }
     :root { --pixel: 'Press Start 2P', monospace; --mono: 'DM Mono', monospace; }
 
@@ -57,12 +59,54 @@
         linear-gradient(90deg, rgba(128,128,128,0.06) 1px, transparent 1px);
       background-size: 16px 16px;
     }
+    #fxGrid { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
     .scanlines {
       position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px);
       transition: opacity 0.3s;
     }
     html[data-theme="light"] .scanlines { opacity: 0; }
+    #fxMatrix { position: fixed; inset: 0; pointer-events: none; z-index: 500; opacity: 0; transition: opacity 0.6s; }
+
+    /* SCROLL PROGRESS */
+    #scrollBar {
+      position: fixed; top: 0; left: 0; height: 3px; width: 0;
+      background: var(--text); z-index: 300; transition: background 0.3s;
+    }
+
+    /* BOOT OVERLAY */
+    #boot {
+      position: fixed; inset: 0; z-index: 1000; background: #000;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s;
+    }
+    #boot.off { opacity: 0; pointer-events: none; }
+    #bootTxt {
+      font-family: var(--mono); font-size: 0.82rem; color: #fff;
+      white-space: pre-wrap; width: min(560px, 86vw); line-height: 1.9;
+    }
+    #bootTxt .ok { color: #888; }
+    .boot-skip {
+      position: fixed; bottom: 24px; left: 0; right: 0; text-align: center;
+      font-family: var(--pixel); font-size: 0.4rem; color: #555;
+    }
+
+    /* CURSOR TRAIL */
+    .trail {
+      position: fixed; width: 5px; height: 5px; background: var(--text);
+      pointer-events: none; z-index: 400; opacity: 0.7;
+      animation: trailFade 0.45s forwards;
+    }
+    @keyframes trailFade { to { opacity: 0; transform: scale(0.2); } }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translate(-50%, 80px);
+      background: var(--text); color: var(--bg); padding: 12px 22px;
+      font-family: var(--pixel); font-size: 0.45rem; z-index: 600;
+      transition: transform 0.35s; white-space: nowrap;
+    }
+    #toast.show { transform: translate(-50%, 0); }
 
     /* NAV */
     nav {
@@ -103,14 +147,25 @@
     /* HERO */
     #home {
       min-height: 100vh; display: flex; align-items: center;
-      padding: 100px clamp(20px,6vw,80px) 80px; position: relative; z-index: 1;
+      padding: 110px clamp(20px,6vw,80px) 80px; position: relative; z-index: 1;
     }
-    .hero-inner { max-width: 860px; width: 100%; }
+    .hero-grid {
+      display: grid; grid-template-columns: minmax(0,1fr) minmax(0,460px);
+      gap: 4rem; align-items: center; width: 100%; max-width: 1280px; margin: 0 auto;
+    }
     .hero-name {
-      font-family: var(--pixel); font-size: clamp(1.3rem,3.5vw,2.6rem);
+      font-family: var(--pixel); font-size: clamp(1.3rem,3.5vw,2.4rem);
       color: var(--text); line-height: 1.6; margin-bottom: 1.2rem;
-      opacity: 0; animation: up 0.5s 0.2s forwards;
+      opacity: 0; animation: up 0.5s 0.2s forwards; position: relative; display: inline-block;
     }
+    .hero-name.glitching::before, .hero-name.glitching::after {
+      content: attr(data-text); position: absolute; left: 0; top: 0; width: 100%;
+      background: var(--bg); overflow: hidden;
+    }
+    .hero-name.glitching::before { left: 2px; clip-path: inset(20% 0 55% 0); animation: glitchA 0.25s steps(2) infinite; }
+    .hero-name.glitching::after { left: -2px; clip-path: inset(60% 0 15% 0); animation: glitchB 0.3s steps(2) infinite; }
+    @keyframes glitchA { 0%{clip-path:inset(10% 0 70% 0)} 50%{clip-path:inset(45% 0 30% 0)} 100%{clip-path:inset(70% 0 5% 0)} }
+    @keyframes glitchB { 0%{clip-path:inset(65% 0 10% 0)} 50%{clip-path:inset(20% 0 60% 0)} 100%{clip-path:inset(40% 0 40% 0)} }
     .cursor {
       display: inline-block; width: 3px; height: 0.9em;
       background: var(--text); margin-left: 6px; vertical-align: middle;
@@ -132,32 +187,53 @@
       font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em;
       padding: 11px 26px; background: var(--text); color: var(--bg);
       text-decoration: none; transition: opacity 0.15s, background 0.3s, color 0.3s;
+      display: inline-block;
     }
     .btn-fill:hover { opacity: 0.8; }
     .btn-out {
       font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em;
       padding: 11px 26px; border: 1px solid var(--border); color: var(--text-mid);
       text-decoration: none; transition: border-color 0.15s, color 0.15s;
+      display: inline-block;
     }
     .btn-out:hover { border-color: var(--text); color: var(--text); }
-    .px-deco {
-      position: absolute; right: clamp(20px,8vw,120px); bottom: 80px;
-      display: grid; grid-template-columns: repeat(10,10px); grid-template-rows: repeat(10,10px); gap: 2px;
-      opacity: 0; animation: fadein 0.6s 1s forwards;
+    .magnet { will-change: transform; transition: transform 0.18s ease-out; }
+
+    /* TERMINAL */
+    .term {
+      border: 1px solid var(--border); background: var(--bg-card);
+      display: flex; flex-direction: column; height: 420px; width: 100%;
+      opacity: 0; animation: up 0.5s 1s forwards;
+      transition: border-color 0.2s, background 0.3s;
+      box-shadow: 8px 8px 0 var(--glow);
     }
-    .p { width:10px; height:10px; }
-    .pw { background: var(--text); transition: background 0.3s; }
-    .pg { background: var(--border); transition: background 0.3s; }
-    .p0 { background: transparent; }
-    .scroll-hint {
-      position: absolute; bottom: 24px; left: clamp(20px,6vw,80px);
-      display: flex; align-items: center; gap: 10px;
-      opacity: 0; animation: fadein 0.4s 1.2s forwards;
+    .term:focus-within { border-color: var(--text); }
+    .term-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      transition: border-color 0.3s;
     }
-    .scroll-hint span { font-family: var(--pixel); font-size: 0.4rem; color: var(--text-dim); }
-    .sh-line { width:40px; height:1px; background:var(--border); position:relative; overflow:hidden; }
-    .sh-line::after { content:''; position:absolute; left:-100%; top:0; width:100%; height:100%; background:var(--text); animation:slide 2s infinite; }
-    @keyframes slide { 0%{left:-100%} 100%{left:100%} }
+    .term-dot { width: 10px; height: 10px; border: 1px solid var(--text-dim); }
+    .term-dot:first-child { background: var(--text-dim); }
+    .term-title { margin-left: auto; font-family: var(--pixel); font-size: 0.38rem; color: var(--text-dim); }
+    .term-body {
+      flex: 1; overflow-y: auto; padding: 14px 16px;
+      font-family: var(--mono); font-size: 0.78rem; line-height: 1.9; color: var(--text-mid);
+    }
+    .term-body::-webkit-scrollbar { width: 3px; }
+    .term-body .t-cmd { color: var(--text); }
+    .term-body .t-dim { color: var(--text-dim); }
+    .term-body .t-out a { color: var(--text); }
+    .term-body pre { font-family: var(--mono); white-space: pre-wrap; word-break: break-word; }
+    .term-in-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-top: 1px solid var(--border); transition: border-color 0.3s;
+    }
+    .term-prompt { font-family: var(--mono); font-size: 0.78rem; color: var(--text); white-space: nowrap; }
+    #termIn {
+      flex: 1; background: transparent; border: none; outline: none;
+      font-family: var(--mono); font-size: 0.82rem; color: var(--text); caret-color: var(--text);
+    }
 
     /* SECTIONS */
     section { position: relative; z-index: 1; }
@@ -165,8 +241,16 @@
     .wrap-alt { background: var(--bg-alt); }
     .s-head { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 3.5rem; }
     .s-num { font-family: var(--pixel); font-size: 0.45rem; color: var(--text-dim); }
-    .s-title { font-family: var(--pixel); font-size: clamp(0.65rem,1.8vw,0.95rem); color: var(--text); }
+    .s-title { font-family: var(--pixel); font-size: clamp(0.65rem,1.8vw,0.95rem); color: var(--text); min-height: 1em; }
     .s-line { flex:1; height:1px; background:var(--border); transition:background 0.3s; }
+
+    /* SCROLL REVEAL */
+    .rv { opacity: 0; transform: translateY(18px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .rv.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .rv { opacity: 1; transform: none; transition: none; }
+      .hero-name, .hero-sub, .hero-desc, .hero-btns, .term, .scroll-hint { animation: none !important; opacity: 1 !important; }
+    }
 
     /* ABOUT */
     .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
@@ -175,11 +259,11 @@
     .skills { display: flex; flex-direction: column; gap: 2rem; }
     .skill-label { font-family: var(--pixel); font-size: 0.4rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.8rem; }
     .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .stag { font-family: var(--mono); font-size: 0.72rem; color: var(--text-mid); border: 1px solid var(--border); padding: 4px 12px; transition: border-color 0.15s, color 0.15s; }
-    .stag:hover { border-color: var(--text); color: var(--text); }
+    .stag { font-family: var(--mono); font-size: 0.72rem; color: var(--text-mid); border: 1px solid var(--border); padding: 4px 12px; transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.15s; }
+    .stag:hover { border-color: var(--text); color: var(--bg); background: var(--text); transform: translateY(-2px); }
     .certs { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
-    .cert-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border); background: var(--bg-card); transition: border-color 0.2s, background 0.3s; }
-    .cert-item:hover { border-color: var(--text); }
+    .cert-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border); background: var(--bg-card); transition: border-color 0.2s, background 0.3s, transform 0.2s; }
+    .cert-item:hover { border-color: var(--text); transform: translateX(6px); }
     .cert-badge { font-family: var(--pixel); font-size: 0.38rem; color: var(--text-dim); white-space: nowrap; }
     .cert-name { font-family: var(--mono); font-size: 0.82rem; color: var(--text-mid); }
     .cert-status { margin-left: auto; font-family: var(--pixel); font-size: 0.35rem; color: var(--text-dim); white-space: nowrap; }
@@ -192,14 +276,27 @@
     .tl-role { font-family: var(--pixel); font-size: 0.56rem; color: var(--text); margin-bottom: 6px; line-height: 1.8; }
     .tl-co { font-family: var(--mono); font-size: 0.78rem; color: var(--text-mid); margin-bottom: 1.2rem; }
     .tl-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .tl-list li { font-size: 0.84rem; color: var(--text-mid); line-height: 1.85; padding-left: 1.2rem; position: relative; }
-    .tl-list li::before { content:'>'; position:absolute; left:0; color:var(--text-dim); }
+    .tl-list li { font-size: 0.84rem; color: var(--text-mid); line-height: 1.85; padding-left: 1.2rem; position: relative; transition: color 0.2s; }
+    .tl-list li::before { content:'>'; position:absolute; left:0; color:var(--text-dim); transition: color 0.2s, transform 0.2s; }
+    .tl-list li:hover { color: var(--text); }
+    .tl-list li:hover::before { color: var(--text); transform: translateX(3px); }
     .tl-list li strong { color: var(--text); font-weight: 500; }
 
     /* PROJECTS */
-    .proj-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-    .proj-card { background: var(--bg-card); padding: 32px 28px; display: flex; flex-direction: column; gap: 14px; transition: background 0.2s; }
-    .proj-card:hover { background: var(--hover-bg); }
+    .proj-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 1.5rem; perspective: 1200px; }
+    .proj-card {
+      background: var(--bg-card); padding: 32px 28px; display: flex; flex-direction: column; gap: 14px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+      transition: border-color 0.2s, background 0.3s;
+      transform-style: preserve-3d; will-change: transform;
+    }
+    .proj-card::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+      background: radial-gradient(420px circle at var(--mx,50%) var(--my,50%), var(--glow), transparent 60%);
+      transition: opacity 0.25s;
+    }
+    .proj-card:hover { border-color: var(--text); }
+    .proj-card:hover::after { opacity: 1; }
     .proj-num { font-family: var(--pixel); font-size: 0.38rem; color: var(--text-dim); }
     .proj-name { font-family: var(--pixel); font-size: 0.58rem; color: var(--text); line-height: 1.8; }
     .proj-desc { font-size: 0.83rem; color: var(--text-mid); line-height: 1.95; flex: 1; }
@@ -215,9 +312,9 @@
     .contact-copy h3 { font-family: var(--pixel); font-size: 0.65rem; color: var(--text); margin-bottom: 1.2rem; line-height: 1.9; }
     .contact-copy p { font-size: 0.88rem; color: var(--text-mid); line-height: 2; margin-bottom: 2rem; }
     .c-links { display: flex; flex-direction: column; gap: 1rem; }
-    .c-link { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 0.82rem; color: var(--text-mid); text-decoration: none; transition: color 0.15s; }
+    .c-link { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 0.82rem; color: var(--text-mid); text-decoration: none; transition: color 0.15s, transform 0.15s; }
     .c-link svg { width:15px; height:15px; flex-shrink:0; }
-    .c-link:hover { color: var(--text); }
+    .c-link:hover { color: var(--text); transform: translateX(5px); }
     .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
     .fg { display: flex; flex-direction: column; gap: 6px; }
     .fg label { font-family: var(--pixel); font-size: 0.38rem; color: var(--text-dim); letter-spacing: 0.1em; }
@@ -231,14 +328,28 @@
     /* FOOTER */
     footer { padding: 1.5rem clamp(20px,6vw,80px); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; transition: border-color 0.3s; }
     footer span { font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); }
+    .konami-hint { font-family: var(--pixel); font-size: 0.32rem; color: var(--text-dim); opacity: 0.5; }
+
+    .scroll-hint {
+      position: absolute; bottom: 24px; left: clamp(20px,6vw,80px);
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0; animation: fadein 0.4s 1.4s forwards;
+    }
+    .scroll-hint span { font-family: var(--pixel); font-size: 0.4rem; color: var(--text-dim); }
+    .sh-line { width:40px; height:1px; background:var(--border); position:relative; overflow:hidden; }
+    .sh-line::after { content:''; position:absolute; left:-100%; top:0; width:100%; height:100%; background:var(--text); animation:slide 2s infinite; }
+    @keyframes slide { 0%{left:-100%} 100%{left:100%} }
 
     @keyframes up { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
     @keyframes fadein { from{opacity:0} to{opacity:1} }
 
+    @media (max-width: 1000px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .term { height: 340px; }
+    }
     @media (max-width: 860px) {
       .about-grid,.contact-grid { grid-template-columns:1fr; gap:3rem; }
       .tl-item { grid-template-columns:1fr; gap:0.5rem; }
-      .px-deco { display:none; }
     }
     @media (max-width: 600px) {
       .nav-links { display:none; }
@@ -252,7 +363,16 @@
 <body>
 
 <div class="grid-bg"></div>
+<canvas id="fxGrid"></canvas>
 <div class="scanlines"></div>
+<canvas id="fxMatrix"></canvas>
+<div id="scrollBar"></div>
+<div id="toast"></div>
+
+<div id="boot">
+  <div id="bootTxt"></div>
+  <div class="boot-skip">[ click or press any key to skip ]</div>
+</div>
 
 <nav>
   <a href="#home" class="nav-logo"><img src="logo.png" alt="Kevin Lin" style="height:36px;width:36px;object-fit:contain;display:block;" /></a>
@@ -263,7 +383,7 @@
     <li><a href="#contact">contact</a></li>
   </ul>
   <div class="nav-right">
-    <button type="button" class="theme-btn" id="themeBtn" title="Toggle light/dark mode" onclick="__toggleTheme()">
+    <button type="button" class="theme-btn magnet" id="themeBtn" title="Toggle light/dark mode" onclick="__toggleTheme()">
       <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="5"/>
         <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
@@ -275,65 +395,66 @@
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
       </svg>
     </button>
-    <a href="Kevin_Lin_Resume.pdf" class="nav-resume" target="_blank">resume</a>
+    <a href="Kevin_Lin_Resume.pdf" class="nav-resume magnet" target="_blank">resume</a>
     <div class="burger" id="burger"><span></span><span></span><span></span></div>
   </div>
 </nav>
 
 <section id="home">
-  <div class="hero-inner">
-    <h1 class="hero-name">Kevin Lin<span class="cursor"></span></h1>
-    <p class="hero-sub">// Bachelor of Arts in CS &middot; I.T. with a concentration of cybersecurity &amp; network administration</p>
-    <p class="hero-desc">
-      Recent CS graduate with hands-on experience in enterprise IT and cloud security.
-      Pursuing a career in <strong>cybersecurity and networking</strong> &mdash; with a foundation
-      built remediating real-world incidents and managing identity systems at scale.
-    </p>
-    <div class="hero-btns">
-      <a href="#projects" class="btn-fill">view projects</a>
-      <a href="#contact" class="btn-out">get in touch</a>
+  <div class="hero-grid">
+    <div class="hero-inner">
+      <h1 class="hero-name" data-text="Kevin Lin">Kevin Lin<span class="cursor"></span></h1>
+      <p class="hero-sub">// Bachelor of Arts in CS &middot; I.T. with a concentration of cybersecurity &amp; network administration</p>
+      <p class="hero-desc">
+        Recent CS graduate with hands-on experience in enterprise IT and cloud security.
+        Pursuing a career in <strong>cybersecurity and networking</strong> &mdash; with a foundation
+        built remediating real-world incidents and managing identity systems at scale.
+      </p>
+      <div class="hero-btns">
+        <a href="#projects" class="btn-fill magnet">view projects</a>
+        <a href="#contact" class="btn-out magnet">get in touch</a>
+      </div>
     </div>
-  </div>
-  <div class="px-deco" aria-hidden="true">
-    <div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div>
-    <div class="p pg"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p pg"></div>
-    <div class="p pg"></div><div class="p p0"></div><div class="p pw"></div><div class="p pw"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p pg"></div>
-    <div class="p pg"></div><div class="p p0"></div><div class="p p0"></div><div class="p pw"></div><div class="p pw"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p pg"></div>
-    <div class="p pg"></div><div class="p p0"></div><div class="p pw"></div><div class="p pw"></div><div class="p p0"></div><div class="p p0"></div><div class="p pw"></div><div class="p pw"></div><div class="p p0"></div><div class="p pg"></div>
-    <div class="p pg"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p pg"></div>
-    <div class="p pg"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p pg"></div>
-    <div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div>
-    <div class="p p0"></div><div class="p p0"></div><div class="p p0"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p p0"></div><div class="p p0"></div><div class="p p0"></div>
-    <div class="p p0"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p pg"></div><div class="p p0"></div>
+    <div class="term" id="termBox">
+      <div class="term-bar">
+        <div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div>
+        <div class="term-title">kevin@portfolio: ~</div>
+      </div>
+      <div class="term-body" id="termOut"></div>
+      <div class="term-in-row">
+        <span class="term-prompt">kevin@portfolio:~$</span>
+        <input id="termIn" type="text" autocomplete="off" spellcheck="false" aria-label="terminal input" />
+      </div>
+    </div>
   </div>
   <div class="scroll-hint"><div class="sh-line"></div><span>scroll</span></div>
 </section>
 
 <div class="wrap wrap-alt" id="about">
   <section>
-    <div class="s-head"><span class="s-num">01</span><h2 class="s-title">about</h2><div class="s-line"></div></div>
+    <div class="s-head"><span class="s-num">01</span><h2 class="s-title" data-scramble>about</h2><div class="s-line"></div></div>
     <div class="about-grid">
       <div class="about-text">
-        <p>I'm <strong>Kevin Lin</strong>, a Computer Science graduate from <strong>CUNY Queens College</strong> with a concentration in IT, cybersecurity, and network administration. I'm passionate about securing infrastructure, understanding how systems fail, and building defenses that hold up in the real world.</p>
-        <p>I have real-world experience supporting enterprise IT, managing cloud identity in <strong>Microsoft Azure</strong>, and responding to large-scale incidents &mdash; including the <strong>CrowdStrike global outage in July 2024</strong>, where I helped remediate 2,500+ workstations at the World Trade Center.</p>
-        <p>Before tech, I spent years managing a family restaurant &mdash; my origin story. It's where I built the skills in <strong>leadership, budgeting, operations, and decision-making</strong> that still shape how I approach every challenge today.</p>
-        <p>I'm currently pursuing certifications through the <strong>NPower NetSYA Program</strong> (expected June 2026), working toward CompTIA Network+ and CompTIA Linux+. I recently earned the <strong>Microsoft Azure AI Fundamentals</strong> certification.</p>
+        <p class="rv">I'm <strong>Kevin Lin</strong>, a Computer Science graduate from <strong>CUNY Queens College</strong> with a concentration in IT, cybersecurity, and network administration. I'm passionate about securing infrastructure, understanding how systems fail, and building defenses that hold up in the real world.</p>
+        <p class="rv">I have real-world experience supporting enterprise IT, managing cloud identity in <strong>Microsoft Azure</strong>, and responding to large-scale incidents &mdash; including the <strong>CrowdStrike global outage in July 2024</strong>, where I helped remediate 2,500+ workstations at the World Trade Center.</p>
+        <p class="rv">Before tech, I spent years managing a family restaurant &mdash; my origin story. It's where I built the skills in <strong>leadership, budgeting, operations, and decision-making</strong> that still shape how I approach every challenge today.</p>
+        <p class="rv">I'm currently pursuing certifications through the <strong>NPower NetSYA Program</strong> (expected June 2026), working toward CompTIA Network+ and CompTIA Linux+. I recently earned the <strong>Microsoft Azure AI Fundamentals</strong> certification.</p>
       </div>
       <div>
         <div class="skills">
-          <div>
+          <div class="rv">
             <div class="skill-label">programming</div>
             <div class="skill-tags">
               <span class="stag">C++</span><span class="stag">Java</span><span class="stag">JavaScript</span><span class="stag">HTML/CSS</span><span class="stag">SQL</span>
             </div>
           </div>
-          <div>
+          <div class="rv">
             <div class="skill-label">networking &amp; OS</div>
             <div class="skill-tags">
               <span class="stag">Linux</span><span class="stag">Windows Server</span><span class="stag">TCP/IP</span><span class="stag">DNS</span><span class="stag">DHCP</span>
             </div>
           </div>
-          <div>
+          <div class="rv">
             <div class="skill-label">cloud &amp; tools</div>
             <div class="skill-tags">
               <span class="stag">Azure AD</span><span class="stag">Microsoft Azure</span><span class="stag">Azure AI Services</span><span class="stag">ServiceNow</span>
@@ -343,9 +464,9 @@
         <div style="margin-top:2.5rem;">
           <div class="skill-label">certifications</div>
           <div class="certs">
-            <div class="cert-item"><div class="cert-badge">COMPTIA</div><div class="cert-name">Network+</div><div class="cert-status">in progress</div></div>
-            <div class="cert-item"><div class="cert-badge">COMPTIA</div><div class="cert-name">Linux+</div><div class="cert-status">in progress</div></div>
-            <div class="cert-item"><div class="cert-badge">MICROSOFT</div><div class="cert-name">Azure AI Fundamentals</div><div class="cert-status">✓ earned</div></div>
+            <div class="cert-item rv"><div class="cert-badge">COMPTIA</div><div class="cert-name">Network+</div><div class="cert-status">in progress</div></div>
+            <div class="cert-item rv"><div class="cert-badge">COMPTIA</div><div class="cert-name">Linux+</div><div class="cert-status">in progress</div></div>
+            <div class="cert-item rv"><div class="cert-badge">MICROSOFT</div><div class="cert-name">Azure AI Fundamentals</div><div class="cert-status">✓ earned</div></div>
           </div>
         </div>
       </div>
@@ -355,9 +476,9 @@
 
 <div class="wrap" id="experience">
   <section>
-    <div class="s-head"><span class="s-num">02</span><h2 class="s-title">experience</h2><div class="s-line"></div></div>
+    <div class="s-head"><span class="s-num">02</span><h2 class="s-title" data-scramble>experience</h2><div class="s-line"></div></div>
     <div class="timeline">
-      <div class="tl-item">
+      <div class="tl-item rv">
         <div class="tl-date">03/2025<br>&mdash;<br>current</div>
         <div>
           <div class="tl-role">AI Evaluation Engineer</div>
@@ -370,7 +491,7 @@
           </ul>
         </div>
       </div>
-      <div class="tl-item">
+      <div class="tl-item rv">
         <div class="tl-date">06/2024<br>&mdash;<br>08/2024</div>
         <div>
           <div class="tl-role">IT Specialist Intern</div>
@@ -383,7 +504,7 @@
           </ul>
         </div>
       </div>
-      <div class="tl-item">
+      <div class="tl-item rv">
         <div class="tl-date">11/2018<br>&mdash;<br>05/2024</div>
         <div>
           <div class="tl-role">Part-Time Manager</div>
@@ -402,9 +523,9 @@
 
 <div class="wrap wrap-alt" id="projects">
   <section>
-    <div class="s-head"><span class="s-num">03</span><h2 class="s-title">projects</h2><div class="s-line"></div></div>
+    <div class="s-head"><span class="s-num">03</span><h2 class="s-title" data-scramble>projects</h2><div class="s-line"></div></div>
     <div class="proj-grid">
-      <div class="proj-card">
+      <div class="proj-card rv">
         <div class="proj-num">001</div>
         <div class="proj-name">PassGuard &mdash; Password Security Analyzer</div>
         <p class="proj-desc">A browser-based password security tool that calculates Shannon entropy and estimates crack times across multiple attack scenarios &mdash; including online throttled attacks, offline bcrypt, MD5, and GPU cluster brute force. Built following <strong>NIST SP 800-63B</strong> guidelines with a real-time security checklist detecting common passwords, keyboard sequences, and character repetition patterns. Engineered entirely client-side &mdash; user passwords are never transmitted or stored.</p>
@@ -414,7 +535,7 @@
           <a href="https://coutlike.github.io/passguard" target="_blank">live demo &rarr;</a>
         </div>
       </div>
-      <div class="proj-card">
+      <div class="proj-card rv">
         <div class="proj-num">002</div>
         <div class="proj-name">PhishGuard &mdash; Phishing URL Detector</div>
         <p class="proj-desc">A URL threat analysis tool that runs <strong>17 detection checks</strong> against real-world phishing techniques documented in <strong>MITRE ATT&amp;CK (T1566)</strong> &mdash; including homoglyph substitution, brand impersonation, subdomain spoofing, open redirect parameters, and high-risk TLD identification. Implements homoglyph normalization to catch typosquatted domains like <code>paypa1.com</code> and a brand-in-subdomain check for patterns like <code>paypal.com.evil.tk</code>. All analysis runs locally &mdash; zero network requests.</p>
@@ -430,9 +551,9 @@
 
 <div class="wrap" id="contact">
   <section>
-    <div class="s-head"><span class="s-num">04</span><h2 class="s-title">contact</h2><div class="s-line"></div></div>
+    <div class="s-head"><span class="s-num">04</span><h2 class="s-title" data-scramble>contact</h2><div class="s-line"></div></div>
     <div class="contact-grid">
-      <div class="contact-copy">
+      <div class="contact-copy rv">
         <h3>let's work<br>together.</h3>
         <p>Feel free to reach out with any questions, project ideas, or opportunities. I look forward to hearing from you.</p>
         <div class="c-links">
@@ -450,7 +571,7 @@
           </a>
         </div>
       </div>
-      <form class="contact-form" id="contactForm">
+      <form class="contact-form rv" id="contactForm">
         <div class="fg"><label>name</label><input type="text" placeholder="your name" required /></div>
         <div class="fg"><label>email</label><input type="email" placeholder="you@email.com" required /></div>
         <div class="fg"><label>message</label><textarea placeholder="what's on your mind?" required></textarea></div>
@@ -462,10 +583,16 @@
 
 <footer>
   <img src="logo.png" alt="Kevin Lin" style="height:28px;width:28px;object-fit:contain;display:block;" />
+  <span class="konami-hint">↑↑↓↓←→←→BA</span>
   <span>&copy; <span id="yr"></span> Kevin Lin &middot; All rights reserved</span>
 </footer>
 
 <script>
+(function() {
+  'use strict';
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isTouch = window.matchMedia('(pointer: coarse)').matches;
+
   // ── Year
   document.getElementById('yr').textContent = new Date().getFullYear();
 
@@ -483,19 +610,77 @@
   document.getElementById('iconSun').style.display  = __isDark ? 'block' : 'none';
   document.getElementById('iconMoon').style.display = __isDark ? 'none'  : 'block';
 
-  // ── Typewriter
+  // ── Boot sequence
+  var bootEl = document.getElementById('boot');
+  var bootSeen = false;
+  try { bootSeen = sessionStorage.getItem('kl-booted') === '1'; } catch(e) {}
+  function killBoot() {
+    if (!bootEl) return;
+    bootEl.classList.add('off');
+    try { sessionStorage.setItem('kl-booted', '1'); } catch(e) {}
+    setTimeout(function(){ if (bootEl && bootEl.parentNode) bootEl.parentNode.removeChild(bootEl); bootEl = null; }, 450);
+  }
+  if (bootSeen || reduceMotion) {
+    bootEl.style.display = 'none';
+    killBoot();
+  } else {
+    var bootLines = [
+      'KEVIN.LIN BIOS v3.0 — initializing...',
+      'CPU ............ human, caffeinated [OK]',
+      'MEM ............ 2500+ workstations remediated [OK]',
+      'NET ............ TCP/IP DNS DHCP [OK]',
+      'SEC ............ azure_ad servicenow nist-800-63b [OK]',
+      'LOADING PORTFOLIO ████████████████ 100%',
+      '',
+      'boot complete. welcome.'
+    ];
+    var bootTxtEl = document.getElementById('bootTxt');
+    var bLine = 0;
+    function bootStep() {
+      if (!bootEl) return;
+      if (bLine >= bootLines.length) { setTimeout(killBoot, 350); return; }
+      var d = document.createElement('div');
+      var raw = bootLines[bLine];
+      if (raw.indexOf('[OK]') > -1) {
+        d.innerHTML = raw.replace('[OK]', '<span class="ok">[OK]</span>');
+      } else { d.textContent = raw; }
+      bootTxtEl.appendChild(d);
+      bLine++;
+      setTimeout(bootStep, bLine === bootLines.length ? 320 : 150);
+    }
+    bootStep();
+    document.addEventListener('keydown', function bk() { killBoot(); document.removeEventListener('keydown', bk); });
+    bootEl.addEventListener('click', killBoot);
+  }
+
+  // ── Scroll progress bar
+  var sBar = document.getElementById('scrollBar');
+  function updBar() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    sBar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', updBar, { passive: true });
+  updBar();
+
+  // ── Typewriter + glitch on hover
   var nameEl = document.querySelector('.hero-name');
-  var full = 'Kevin Lin';
-  var idx = 0;
+  var fullName = 'Kevin Lin';
+  var twIdx = 0;
   nameEl.innerHTML = '<span class="cursor"></span>';
-  function type() {
-    if (idx <= full.length) {
-      nameEl.innerHTML = full.slice(0, idx) + '<span class="cursor"></span>';
-      idx++;
-      setTimeout(type, idx === 1 ? 600 : 80);
+  function typeName() {
+    if (twIdx <= fullName.length) {
+      nameEl.innerHTML = fullName.slice(0, twIdx) + '<span class="cursor"></span>';
+      twIdx++;
+      setTimeout(typeName, twIdx === 1 ? 600 : 80);
     }
   }
-  setTimeout(type, 400);
+  setTimeout(typeName, reduceMotion ? 0 : 400);
+  if (reduceMotion) { nameEl.innerHTML = fullName + '<span class="cursor"></span>'; twIdx = fullName.length + 1; }
+  nameEl.addEventListener('mouseenter', function() {
+    if (reduceMotion) return;
+    nameEl.classList.add('glitching');
+    setTimeout(function(){ nameEl.classList.remove('glitching'); }, 500);
+  });
 
   // ── Active nav on scroll
   var navAs = document.querySelectorAll('.nav-links a');
@@ -510,7 +695,7 @@
         if (active) active.style.color = 'var(--text)';
       }
     });
-  });
+  }, { passive: true });
 
   // ── Contact form
   document.getElementById('contactForm').addEventListener('submit', function(e) {
@@ -527,6 +712,287 @@
       }, 2000);
     }, 1000);
   });
+
+  // ── Scroll reveal
+  var rvObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(en) {
+      if (en.isIntersecting) { en.target.classList.add('in'); rvObs.unobserve(en.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.rv').forEach(function(el) { rvObs.observe(el); });
+
+  // ── Text scramble on section titles
+  var SCRAMBLE_CHARS = '!<>-_\\/[]{}=+*^?#01';
+  function scramble(el) {
+    var target = el.textContent;
+    var frame = 0, total = target.length * 4 + 8;
+    var iv = setInterval(function() {
+      var out = '';
+      for (var i = 0; i < target.length; i++) {
+        if (i < frame / 4) { out += target[i]; }
+        else { out += SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)]; }
+      }
+      el.textContent = out;
+      frame++;
+      if (frame > total) { el.textContent = target; clearInterval(iv); }
+    }, 28);
+  }
+  if (!reduceMotion) {
+    var scObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(en) {
+        if (en.isIntersecting) { scramble(en.target); scObs.unobserve(en.target); }
+      });
+    }, { threshold: 0.6 });
+    document.querySelectorAll('[data-scramble]').forEach(function(el) { scObs.observe(el); });
+  }
+
+  // ── Magnetic elements
+  if (!isTouch && !reduceMotion) {
+    document.querySelectorAll('.magnet').forEach(function(m) {
+      m.addEventListener('mousemove', function(e) {
+        var r = m.getBoundingClientRect();
+        var dx = e.clientX - (r.left + r.width / 2);
+        var dy = e.clientY - (r.top + r.height / 2);
+        m.style.transform = 'translate(' + dx * 0.25 + 'px,' + dy * 0.25 + 'px)';
+      });
+      m.addEventListener('mouseleave', function() { m.style.transform = ''; });
+    });
+  }
+
+  // ── 3D tilt + spotlight on project cards
+  if (!isTouch && !reduceMotion) {
+    document.querySelectorAll('.proj-card').forEach(function(card) {
+      card.addEventListener('mousemove', function(e) {
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width;
+        var py = (e.clientY - r.top) / r.height;
+        card.style.setProperty('--mx', (px * 100) + '%');
+        card.style.setProperty('--my', (py * 100) + '%');
+        card.style.transform = 'rotateY(' + ((px - 0.5) * 7) + 'deg) rotateX(' + ((0.5 - py) * 7) + 'deg)';
+      });
+      card.addEventListener('mouseleave', function() { card.style.transform = ''; });
+    });
+  }
+
+  // ── Cursor trail (pixel squares)
+  if (!isTouch && !reduceMotion) {
+    var lastTrail = 0;
+    document.addEventListener('mousemove', function(e) {
+      var now = Date.now();
+      if (now - lastTrail < 40) return;
+      lastTrail = now;
+      var t = document.createElement('div');
+      t.className = 'trail';
+      t.style.left = (e.clientX - 2) + 'px';
+      t.style.top = (e.clientY - 2) + 'px';
+      document.body.appendChild(t);
+      setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 500);
+    }, { passive: true });
+  }
+
+  // ── Reactive pixel grid (canvas)
+  var gridCv = document.getElementById('fxGrid');
+  var gridCx = gridCv.getContext('2d');
+  var CELL = 16;
+  var cells = {};
+  function sizeGrid() { gridCv.width = window.innerWidth; gridCv.height = window.innerHeight; }
+  sizeGrid();
+  window.addEventListener('resize', sizeGrid);
+  if (!isTouch && !reduceMotion) {
+    document.addEventListener('mousemove', function(e) {
+      var cx = Math.floor(e.clientX / CELL), cy = Math.floor(e.clientY / CELL);
+      for (var ox = -2; ox <= 2; ox++) {
+        for (var oy = -2; oy <= 2; oy++) {
+          var dist = Math.abs(ox) + Math.abs(oy);
+          if (dist > 3) continue;
+          var key = (cx + ox) + ',' + (cy + oy);
+          var add = 0.5 - dist * 0.13;
+          cells[key] = Math.min(1, (cells[key] || 0) + add);
+        }
+      }
+    }, { passive: true });
+    (function gridLoop() {
+      gridCx.clearRect(0, 0, gridCv.width, gridCv.height);
+      var col = getComputedStyle(document.body).color;
+      var keys = Object.keys(cells);
+      for (var i = 0; i < keys.length; i++) {
+        var v = cells[keys[i]];
+        if (v <= 0.01) { delete cells[keys[i]]; continue; }
+        var parts = keys[i].split(',');
+        gridCx.globalAlpha = v * 0.22;
+        gridCx.fillStyle = col;
+        gridCx.fillRect(parts[0] * CELL, parts[1] * CELL, CELL - 1, CELL - 1);
+        cells[keys[i]] = v * 0.92;
+      }
+      gridCx.globalAlpha = 1;
+      requestAnimationFrame(gridLoop);
+    })();
+  }
+
+  // ── Matrix rain
+  var mxCv = document.getElementById('fxMatrix');
+  var mxCx = mxCv.getContext('2d');
+  var mxOn = false, mxTimer = null;
+  function runMatrix(dur) {
+    if (mxOn) return;
+    mxOn = true;
+    mxCv.width = window.innerWidth; mxCv.height = window.innerHeight;
+    mxCv.style.opacity = '1';
+    var fs = 14, colsN = Math.floor(mxCv.width / fs);
+    var drops = [];
+    for (var i = 0; i < colsN; i++) drops[i] = Math.random() * -40;
+    var chars = '01アイウエオカキクケコサシスセソ<>{}[]#$%&';
+    function mxFrame() {
+      if (!mxOn) return;
+      var darkNow = document.documentElement.getAttribute('data-theme') === 'dark';
+      mxCx.fillStyle = darkNow ? 'rgba(0,0,0,0.1)' : 'rgba(245,245,240,0.1)';
+      mxCx.fillRect(0, 0, mxCv.width, mxCv.height);
+      mxCx.fillStyle = darkNow ? '#fff' : '#000';
+      mxCx.font = fs + 'px monospace';
+      for (var j = 0; j < drops.length; j++) {
+        var ch = chars[Math.floor(Math.random() * chars.length)];
+        mxCx.fillText(ch, j * fs, drops[j] * fs);
+        if (drops[j] * fs > mxCv.height && Math.random() > 0.975) drops[j] = 0;
+        drops[j]++;
+      }
+      requestAnimationFrame(mxFrame);
+    }
+    mxFrame();
+    clearTimeout(mxTimer);
+    mxTimer = setTimeout(function() {
+      mxCv.style.opacity = '0';
+      setTimeout(function() { mxOn = false; mxCx.clearRect(0,0,mxCv.width,mxCv.height); }, 700);
+    }, dur || 6000);
+  }
+
+  // ── Toast
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { toastEl.classList.remove('show'); }, 2600);
+  }
+
+  // ── Konami code
+  var KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  var kPos = 0;
+  document.addEventListener('keydown', function(e) {
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+    var k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (k === KONAMI[kPos]) {
+      kPos++;
+      if (kPos === KONAMI.length) {
+        kPos = 0;
+        runMatrix(7000);
+        showToast('ACHIEVEMENT UNLOCKED: KONAMI_CODE');
+      }
+    } else { kPos = (k === KONAMI[0]) ? 1 : 0; }
+  });
+
+  // ── Terminal
+  var termOut = document.getElementById('termOut');
+  var termIn = document.getElementById('termIn');
+  var termBox = document.getElementById('termBox');
+  var tHistory = [];
+  var tHistPos = -1;
+
+  function tPrint(html, cls) {
+    var d = document.createElement('div');
+    d.className = 't-out' + (cls ? ' ' + cls : '');
+    d.innerHTML = html;
+    termOut.appendChild(d);
+    termOut.scrollTop = termOut.scrollHeight;
+  }
+  function tEcho(cmdStr) {
+    tPrint('<span class="t-dim">kevin@portfolio:~$</span> <span class="t-cmd">' + cmdStr.replace(/</g,'&lt;') + '</span>');
+  }
+  function goSection(id) { var el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); }
+
+  var TCMDS = {
+    help: function() {
+      tPrint(
+        'available commands:<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">whoami</span> ......... about me, the short version<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">ls</span> ............. list site sections<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">about | experience | projects | contact</span> — jump to section<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">cat passguard</span> .. project details (also: phishguard)<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">resume</span> ......... open my resume (pdf)<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">social</span> ......... github / linkedin / email<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">theme</span> .......... toggle light/dark<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">matrix</span> ......... ???<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">clear</span> .......... clear terminal'
+      );
+    },
+    whoami: function() {
+      tPrint('Kevin Lin — CS grad (CUNY Queens College), cybersecurity &amp; network administration.<br>Currently: AI Evaluation Engineer @ Handshake.<br>Previously: remediated 2,500+ workstations during the July 2024 CrowdStrike outage at NYC DSS.<br>Certs: Azure AI Fundamentals ✓ &middot; Network+ &amp; Linux+ in progress.');
+    },
+    ls: function() { tPrint('about/&nbsp;&nbsp;experience/&nbsp;&nbsp;projects/&nbsp;&nbsp;contact/&nbsp;&nbsp;<span class="t-cmd">Kevin_Lin_Resume.pdf</span>'); },
+    about: function() { tPrint('navigating to /about ...'); goSection('about'); },
+    experience: function() { tPrint('navigating to /experience ...'); goSection('experience'); },
+    projects: function() { tPrint('navigating to /projects ...'); goSection('projects'); },
+    contact: function() { tPrint('navigating to /contact ...'); goSection('contact'); },
+    resume: function() { tPrint('opening Kevin_Lin_Resume.pdf ...'); window.open('Kevin_Lin_Resume.pdf', '_blank'); },
+    social: function() {
+      tPrint('github ... <a href="https://github.com/coutLiKe" target="_blank">github.com/coutLiKe</a><br>linkedin . <a href="https://www.linkedin.com/in/coutlike/" target="_blank">linkedin.com/in/coutlike</a><br>email .... <a href="mailto:kevinlin032202@gmail.com">kevinlin032202@gmail.com</a>');
+    },
+    theme: function() { __toggleTheme(); tPrint('theme switched to ' + (__isDark ? 'dark' : 'light') + ' mode.'); },
+    matrix: function() { tPrint('wake up, neo...'); runMatrix(6000); },
+    clear: function() { termOut.innerHTML = ''; },
+    exit: function() { tPrint('there is no escape. try <span class="t-cmd">help</span>.'); },
+    pwd: function() { tPrint('/home/kevin/portfolio'); },
+    date: function() { tPrint(new Date().toString()); },
+    hack: function() { tPrint('<span class="t-dim">initializing l33t mode...</span><br>ACCESS DENIED. nice try though. ' + String.fromCodePoint(0x1F575) + String.fromCodePoint(0xFE0F)); }
+  };
+  function tCat(arg) {
+    if (arg === 'passguard') {
+      tPrint('<span class="t-cmd">PassGuard</span> — password security analyzer.<br>Shannon entropy + crack-time estimates (bcrypt, MD5, GPU cluster). NIST SP 800-63B. 100% client-side.<br><a href="https://coutlike.github.io/passguard" target="_blank">live demo →</a> &nbsp; <a href="https://github.com/coutLiKe/passguard" target="_blank">github →</a>');
+    } else if (arg === 'phishguard') {
+      tPrint('<span class="t-cmd">PhishGuard</span> — phishing URL detector.<br>17 checks vs MITRE ATT&amp;CK T1566: homoglyphs, brand spoofing, risky TLDs. Zero network requests.<br><a href="https://coutlike.github.io/phishguard" target="_blank">live demo →</a> &nbsp; <a href="https://github.com/coutLiKe/phishguard" target="_blank">github →</a>');
+    } else {
+      tPrint('cat: ' + (arg || '') + ': no such file. try <span class="t-cmd">cat passguard</span>');
+    }
+  }
+  function runCmd(raw) {
+    var line = raw.trim();
+    if (!line) return;
+    tEcho(line);
+    tHistory.push(line);
+    tHistPos = tHistory.length;
+    var parts = line.split(/\s+/);
+    var c = parts[0].toLowerCase();
+    if (c === 'sudo') {
+      if (line.toLowerCase().indexOf('hire') > -1) {
+        tPrint('permission granted. drafting offer letter... <a href="mailto:kevinlin032202@gmail.com">kevinlin032202@gmail.com</a> ' + String.fromCodePoint(0x1F91D));
+      } else {
+        tPrint('kevin is not in the sudoers file. this incident will be reported.');
+      }
+      return;
+    }
+    if (c === 'cat') { tCat(parts[1] ? parts[1].toLowerCase() : ''); return; }
+    if (c === 'echo') { tPrint(line.slice(5).replace(/</g,'&lt;') || ''); return; }
+    if (TCMDS[c]) { TCMDS[c](); return; }
+    tPrint('command not found: ' + c.replace(/</g,'&lt;') + ' — type <span class="t-cmd">help</span>');
+  }
+  termIn.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { runCmd(termIn.value); termIn.value = ''; }
+    else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (tHistPos > 0) { tHistPos--; termIn.value = tHistory[tHistPos] || ''; }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (tHistPos < tHistory.length - 1) { tHistPos++; termIn.value = tHistory[tHistPos] || ''; }
+      else { tHistPos = tHistory.length; termIn.value = ''; }
+    }
+  });
+  termBox.addEventListener('click', function() { termIn.focus({ preventScroll: true }); });
+
+  // terminal greeting
+  tPrint('<span class="t-dim">last login: ' + new Date().toLocaleString() + '</span>');
+  tPrint('welcome to <span class="t-cmd">kevin.lin</span> v3.0 — interactive portfolio shell');
+  tPrint('type <span class="t-cmd">help</span> to see available commands.');
+})();
 </script>
 </body>
 </html>

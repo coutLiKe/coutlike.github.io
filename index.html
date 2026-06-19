@@ -545,6 +545,15 @@
           <a href="https://coutlike.github.io/phishguard" target="_blank">live demo &rarr;</a>
         </div>
       </div>
+      <div class="proj-card rv">
+        <div class="proj-num">003</div>
+        <div class="proj-name">DayGuard &mdash; Personal Security Dashboard for macOS</div>
+        <p class="proj-desc">A menu bar app and local dashboard surfacing seven security signals at a glance &mdash; FileVault, firewall, Gatekeeper &amp; SIP status, unrecognized LAN devices, VPN tunnels, disk space, and recent app changes, plus domain/SSL health and filtered <strong>CVE alerts from NVD</strong> (CVSS &ge; 7.0). A Morning Brief panel uses a local LLM (Ollama) to summarize everything into a short narrative. Runs entirely offline, with zero telemetry, paid APIs, or subscriptions &mdash; same privacy-first philosophy as PassGuard and PhishGuard.</p>
+        <div class="proj-stack"><span class="ptag">Python</span><span class="ptag">FastAPI</span><span class="ptag">macOS</span></div>
+        <div class="proj-links">
+          <a href="https://github.com/coutLiKe/dayguard" target="_blank">github &rarr;</a>
+        </div>
+      </div>
     </div>
   </section>
 </div>
@@ -917,7 +926,7 @@
         '&nbsp;&nbsp;<span class="t-cmd">whoami</span> ......... about me, the short version<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">ls</span> ............. list site sections<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">about | experience | projects | contact</span> — jump to section<br>' +
-        '&nbsp;&nbsp;<span class="t-cmd">cat passguard</span> .. project details (also: phishguard)<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">cat passguard</span> .. project details (also: phishguard, dayguard)<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">resume</span> ......... open my resume (pdf)<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">social</span> ......... github / linkedin / email<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">theme</span> .......... toggle light/dark<br>' +
@@ -950,6 +959,8 @@
       tPrint('<span class="t-cmd">PassGuard</span> — password security analyzer.<br>Shannon entropy + crack-time estimates (bcrypt, MD5, GPU cluster). NIST SP 800-63B. 100% client-side.<br><a href="https://coutlike.github.io/passguard" target="_blank">live demo →</a> &nbsp; <a href="https://github.com/coutLiKe/passguard" target="_blank">github →</a>');
     } else if (arg === 'phishguard') {
       tPrint('<span class="t-cmd">PhishGuard</span> — phishing URL detector.<br>17 checks vs MITRE ATT&amp;CK T1566: homoglyphs, brand spoofing, risky TLDs. Zero network requests.<br><a href="https://coutlike.github.io/phishguard" target="_blank">live demo →</a> &nbsp; <a href="https://github.com/coutLiKe/phishguard" target="_blank">github →</a>');
+    } else if (arg === 'dayguard') {
+      tPrint('<span class="t-cmd">DayGuard</span> — personal security dashboard for macOS.<br>Menu bar app + local dashboard: FileVault/firewall/SIP checks, LAN + VPN monitoring, CVE alerts from NVD, Ollama-powered Morning Brief. $0 cost, zero telemetry.<br><a href="https://github.com/coutLiKe/dayguard" target="_blank">github →</a>');
     } else {
       tPrint('cat: ' + (arg || '') + ': no such file. try <span class="t-cmd">cat passguard</span>');
     }

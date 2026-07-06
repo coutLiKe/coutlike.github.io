@@ -565,6 +565,16 @@
           <a href="https://github.com/coutLiKe/dayguard" target="_blank">github &rarr;</a>
         </div>
       </div>
+      <div class="proj-card rv">
+        <div class="proj-num">004</div>
+        <div class="proj-name">Meowjong &mdash; FJ Mahjong: Learn &amp; Play</div>
+        <p class="proj-desc">A full browser-based implementation of <strong>FJ (Fujian) mahjong</strong> &mdash; interactive tutorial, three AI opponents, and real-time <strong>peer-to-peer multiplayer over WebRTC</strong> (PeerJS), where up to four players share a room code and AI seamlessly fills empty seats or takes over on disconnect. Built on a wild-aware winning-hand engine and a <strong>Monte Carlo strategy assistant</strong> that ranks every possible move. The host-authoritative netcode was security-audited and hardened against <strong>XSS and malformed-input injection</strong>, and the game logic is covered by <strong>59 zero-dependency unit tests</strong>. No build step, no backend &mdash; entirely client-side.</p>
+        <div class="proj-stack"><span class="ptag">HTML</span><span class="ptag">CSS</span><span class="ptag">JavaScript</span><span class="ptag">WebRTC</span></div>
+        <div class="proj-links">
+          <a href="https://github.com/coutLiKe/meowjong" target="_blank">github &rarr;</a>
+          <a href="https://coutlike.github.io/meowjong" target="_blank">live demo &rarr;</a>
+        </div>
+      </div>
     </div>
   </section>
 </div>
@@ -937,7 +947,7 @@
         '&nbsp;&nbsp;<span class="t-cmd">whoami</span> ......... about me, the short version<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">ls</span> ............. list site sections<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">about | experience | projects | contact</span> — jump to section<br>' +
-        '&nbsp;&nbsp;<span class="t-cmd">cat passguard</span> .. project details (also: phishguard, dayguard)<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">cat passguard</span> .. project details (also: phishguard, dayguard, meowjong)<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">resume</span> ......... open my resume (pdf)<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">social</span> ......... github / linkedin / email<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">theme</span> .......... toggle light/dark<br>' +
@@ -972,6 +982,8 @@
       tPrint('<span class="t-cmd">PhishGuard</span> — phishing URL detector.<br>17 checks vs MITRE ATT&amp;CK T1566: homoglyphs, brand spoofing, risky TLDs. Zero network requests.<br><a href="https://coutlike.github.io/phishguard" target="_blank">live demo →</a> &nbsp; <a href="https://github.com/coutLiKe/phishguard" target="_blank">github →</a>');
     } else if (arg === 'dayguard') {
       tPrint('<span class="t-cmd">DayGuard</span> — personal security dashboard for macOS.<br>Menu bar app + local dashboard: FileVault/firewall/SIP checks, LAN + VPN monitoring, CVE alerts from NVD, Ollama-powered Morning Brief. $0 cost, zero telemetry.<br><a href="https://github.com/coutLiKe/dayguard" target="_blank">github →</a>');
+    } else if (arg === 'meowjong') {
+      tPrint('<span class="t-cmd">Meowjong</span> — FJ (Fujian) mahjong, learn &amp; play.<br>Full game engine (wild-aware win detection) + AI opponents + P2P multiplayer over WebRTC. Monte Carlo strategy assistant, interactive tutorial, 59 unit tests. Netcode hardened vs XSS/injection. Zero backend.<br><a href="https://coutlike.github.io/meowjong" target="_blank">live demo →</a> &nbsp; <a href="https://github.com/coutLiKe/meowjong" target="_blank">github →</a>');
     } else {
       tPrint('cat: ' + (arg || '') + ': no such file. try <span class="t-cmd">cat passguard</span>');
     }

@@ -575,6 +575,26 @@
           <a href="https://coutlike.github.io/meowjong" target="_blank">live demo &rarr;</a>
         </div>
       </div>
+      <div class="proj-card rv">
+        <div class="proj-num">005</div>
+        <div class="proj-name">TicketDesk &mdash; IT Help Desk &amp; Asset Tracker</div>
+        <p class="proj-desc">A full-stack help desk where requesters file tickets, technicians work them through <code>open</code> &rarr; <code>in_progress</code> &rarr; <code>resolved</code>, and admins manage users &mdash; with laptops, monitors, and phones tracked as assets that link to tickets. <strong>Role-based access control</strong> is enforced server-side on every endpoint and tested per role, including refusal cases; hidden records return 404 instead of 403, and roles are re-read from the database on each request so deactivated users are locked out instantly. Technicians get internal notes requesters never see. Backed by <strong>322 backend tests (97% coverage)</strong> against real PostgreSQL migrations, with CI and Docker, deployed on Render, Neon, and GitHub Pages.</p>
+        <div class="proj-stack"><span class="ptag">Python</span><span class="ptag">FastAPI</span><span class="ptag">PostgreSQL</span><span class="ptag">React</span><span class="ptag">Docker</span></div>
+        <div class="proj-links">
+          <a href="https://github.com/coutLiKe/ticketdesk" target="_blank">github &rarr;</a>
+          <a href="https://coutlike.github.io/ticketdesk/" target="_blank">live demo &rarr;</a>
+        </div>
+      </div>
+      <div class="proj-card rv">
+        <div class="proj-num">006</div>
+        <div class="proj-name">Endpoint Triage &mdash; Help Desk Diagnostics CLI</div>
+        <p class="proj-desc">A cross-platform, <strong>read-only</strong> command-line tool a technician runs with one command on macOS, Windows, or Linux to collect system, disk, network, VPN, proxy, and pending-update diagnostics &mdash; then writes a ticket-ready <code>.txt</code> and versioned <code>.json</code> report with CRITICAL / WARNING / INFO findings and <strong>Nagios-style exit codes</strong> for RMM monitors. Ping, DNS, and TCP 443 tests are combined to pinpoint the likely fault: local network, DNS, firewall, proxy, or internet path. Standard library only, runs without admin rights, uses an allow-list of fixed command paths, and never sends data anywhere. Ships as a single <code>.pyz</code> with a <strong>signed build provenance attestation</strong>, tested in CI across all three OSes &mdash; including Windows Constrained Language Mode.</p>
+        <div class="proj-stack"><span class="ptag">Python</span><span class="ptag">CLI</span><span class="ptag">macOS</span><span class="ptag">Windows</span><span class="ptag">Linux</span></div>
+        <div class="proj-links">
+          <a href="https://github.com/coutLiKe/endpoint-triage" target="_blank">github &rarr;</a>
+          <a href="https://github.com/coutLiKe/endpoint-triage/releases/latest" target="_blank">download &rarr;</a>
+        </div>
+      </div>
     </div>
   </section>
 </div>
@@ -947,7 +967,7 @@
         '&nbsp;&nbsp;<span class="t-cmd">whoami</span> ......... about me, the short version<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">ls</span> ............. list site sections<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">about | experience | projects | contact</span> — jump to section<br>' +
-        '&nbsp;&nbsp;<span class="t-cmd">cat passguard</span> .. project details (also: phishguard, dayguard, meowjong)<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">cat passguard</span> .. project details (also: phishguard, dayguard, meowjong, ticketdesk, triage)<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">resume</span> ......... open my resume (pdf)<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">social</span> ......... github / linkedin / email<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">theme</span> .......... toggle light/dark<br>' +
@@ -984,6 +1004,10 @@
       tPrint('<span class="t-cmd">DayGuard</span> — personal security dashboard for macOS.<br>Menu bar app + local dashboard: FileVault/firewall/SIP checks, LAN + VPN monitoring, CVE alerts from NVD, Ollama-powered Morning Brief. $0 cost, zero telemetry.<br><a href="https://github.com/coutLiKe/dayguard" target="_blank">github →</a>');
     } else if (arg === 'meowjong') {
       tPrint('<span class="t-cmd">Meowjong</span> — FJ (Fujian) mahjong, learn &amp; play.<br>Full game engine (wild-aware win detection) + AI opponents + P2P multiplayer over WebRTC. Monte Carlo strategy assistant, interactive tutorial, 59 unit tests. Netcode hardened vs XSS/injection. Zero backend.<br><a href="https://coutlike.github.io/meowjong" target="_blank">live demo →</a> &nbsp; <a href="https://github.com/coutLiKe/meowjong" target="_blank">github →</a>');
+    } else if (arg === 'ticketdesk') {
+      tPrint('<span class="t-cmd">TicketDesk</span> — IT help desk &amp; asset tracker.<br>FastAPI + PostgreSQL + React. Requester / technician / admin roles enforced server-side, internal notes, asset tracking. 322 backend tests, 97% coverage, Docker + CI.<br><a href="https://coutlike.github.io/ticketdesk/" target="_blank">live demo →</a> &nbsp; <a href="https://github.com/coutLiKe/ticketdesk" target="_blank">github →</a>');
+    } else if (arg === 'triage' || arg === 'endpoint-triage') {
+      tPrint('<span class="t-cmd">Endpoint Triage</span> — read-only help desk diagnostics CLI.<br>One command on macOS / Windows / Linux: system, disk, network, VPN, proxy &amp; update checks → ticket-ready txt + json report, Nagios-style exit codes. Stdlib only, no admin rights, no data leaves the machine.<br><a href="https://github.com/coutLiKe/endpoint-triage/releases/latest" target="_blank">download →</a> &nbsp; <a href="https://github.com/coutLiKe/endpoint-triage" target="_blank">github →</a>');
     } else {
       tPrint('cat: ' + (arg || '') + ': no such file. try <span class="t-cmd">cat passguard</span>');
     }

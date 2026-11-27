@@ -141,6 +141,21 @@
       transition: opacity 0.15s, background 0.3s, color 0.3s;
     }
     .nav-resume:hover { opacity: 0.8; }
+    button.nav-resume { border: none; cursor: crosshair; }
+    .resume-wrap { position: relative; }
+    .resume-menu {
+      position: absolute; top: calc(100% + 8px); right: 0; min-width: 230px;
+      display: none; flex-direction: column;
+      background: var(--bg); border: 1px solid var(--border); z-index: 300;
+    }
+    .resume-wrap.open .resume-menu { display: flex; }
+    .resume-menu a {
+      font-family: var(--mono); font-size: 0.74rem; color: var(--text-mid);
+      padding: 10px 14px; text-decoration: none; transition: background 0.15s, color 0.15s;
+    }
+    .resume-menu a + a { border-top: 1px solid var(--border); }
+    .resume-menu a:hover, .resume-menu a:focus-visible { color: var(--text); background: var(--border); outline: none; }
+    .resume-menu a span { display: block; font-size: 0.66rem; opacity: 0.7; margin-top: 2px; }
     .burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
     .burger span { width: 20px; height: 1px; background: var(--text); }
 
@@ -400,7 +415,13 @@
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
       </svg>
     </button>
-    <a href="Kevin_Lin_Resume.pdf" class="nav-resume magnet" target="_blank">resume</a>
+    <div class="resume-wrap" id="resumeWrap">
+      <button type="button" class="nav-resume magnet" id="resumeBtn" aria-haspopup="true" aria-expanded="false" aria-controls="resumeMenu">resume &#9662;</button>
+      <div class="resume-menu" id="resumeMenu" role="menu">
+        <a href="Kevin_Lin_Resume_SWE.pdf" target="_blank" rel="noopener" role="menuitem">software engineering<span>C# &middot; .NET &middot; SQL &middot; testing</span></a>
+        <a href="Kevin_Lin_Resume_IT.pdf" target="_blank" rel="noopener" role="menuitem">it support<span>help desk &middot; systems &middot; networking</span></a>
+      </div>
+    </div>
     <div class="burger" id="burger"><span></span><span></span><span></span></div>
   </div>
 </nav>
@@ -1012,7 +1033,7 @@
         '&nbsp;&nbsp;<span class="t-cmd">ls</span> ............. list site sections<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">about | experience | projects | contact</span> — jump to section<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">cat passguard</span> .. project details (also: phishguard, dayguard, meowjong, ticketdesk, triage)<br>' +
-        '&nbsp;&nbsp;<span class="t-cmd">resume</span> ......... open my resume (pdf)<br>' +
+        '&nbsp;&nbsp;<span class="t-cmd">resume swe</span> ..... open my resume (pdf) &mdash; also: <span class="t-cmd">resume it</span><br>' +
         '&nbsp;&nbsp;<span class="t-cmd">social</span> ......... github / linkedin / email<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">theme</span> .......... toggle light/dark<br>' +
         '&nbsp;&nbsp;<span class="t-cmd">matrix</span> ......... ???<br>' +
@@ -1022,12 +1043,14 @@
     whoami: function() {
       tPrint('Kevin Lin — software engineer, CS grad (CUNY Queens College).<br>Currently: Technology Trainee – Software Engineer @ Trinity Solar (C#, ASP.NET Core, Azure SQL).<br>Previously: AI Trainer @ Handshake &middot; Headstarter SWE fellow.<br>Before that: remediated 2,500+ workstations during the July 2024 CrowdStrike outage at NYC DSS.<br>Certs: A+ ✓ &middot; Network+ ✓ &middot; Linux+ ✓ &middot; CIOS ✓ &middot; CSSS ✓ &middot; CLNP ✓ &middot; Azure AI Fundamentals ✓.');
     },
-    ls: function() { tPrint('about/&nbsp;&nbsp;experience/&nbsp;&nbsp;projects/&nbsp;&nbsp;contact/&nbsp;&nbsp;<span class="t-cmd">Kevin_Lin_Resume.pdf</span>'); },
+    ls: function() { tPrint('about/&nbsp;&nbsp;experience/&nbsp;&nbsp;projects/&nbsp;&nbsp;contact/&nbsp;&nbsp;<span class="t-cmd">Kevin_Lin_Resume_SWE.pdf</span>&nbsp;&nbsp;<span class="t-cmd">Kevin_Lin_Resume_IT.pdf</span>'); },
     about: function() { tPrint('navigating to /about ...'); goSection('about'); },
     experience: function() { tPrint('navigating to /experience ...'); goSection('experience'); },
     projects: function() { tPrint('navigating to /projects ...'); goSection('projects'); },
     contact: function() { tPrint('navigating to /contact ...'); goSection('contact'); },
-    resume: function() { tPrint('opening Kevin_Lin_Resume.pdf ...'); window.open('Kevin_Lin_Resume.pdf', '_blank'); },
+    resume: function() {
+      tPrint('two versions:<br>&nbsp;&nbsp;<span class="t-cmd">resume swe</span> ... <a href="Kevin_Lin_Resume_SWE.pdf" target="_blank">software engineering</a><br>&nbsp;&nbsp;<span class="t-cmd">resume it</span> .... <a href="Kevin_Lin_Resume_IT.pdf" target="_blank">it support</a>');
+    },
     social: function() {
       tPrint('github ... <a href="https://github.com/coutLiKe" target="_blank">github.com/coutLiKe</a><br>linkedin . <a href="https://www.linkedin.com/in/coutlike/" target="_blank">linkedin.com/in/coutlike</a><br>email .... <a href="mailto:kevinlin032202@gmail.com">kevinlin032202@gmail.com</a>');
     },
@@ -1073,6 +1096,13 @@
       return;
     }
     if (c === 'cat') { tCat(parts[1] ? parts[1].toLowerCase() : ''); return; }
+    if (c === 'resume' && parts[1]) {
+      var rv = parts[1].toLowerCase();
+      var rf = (rv === 'swe' || rv === 'se' || rv === 'dev') ? 'Kevin_Lin_Resume_SWE.pdf' : (rv === 'it' ? 'Kevin_Lin_Resume_IT.pdf' : '');
+      if (rf) { tPrint('opening ' + rf + ' ...'); window.open(rf, '_blank'); }
+      else { tPrint('resume: unknown version. try <span class="t-cmd">resume swe</span> or <span class="t-cmd">resume it</span>'); }
+      return;
+    }
     if (c === 'echo') { tPrint(line.slice(5).replace(/</g,'&lt;') || ''); return; }
     if (TCMDS[c]) { TCMDS[c](); return; }
     tPrint('command not found: ' + c.replace(/</g,'&lt;') + ' — type <span class="t-cmd">help</span>');
@@ -1094,6 +1124,17 @@
   tPrint('<span class="t-dim">last login: ' + new Date().toLocaleString() + '</span>');
   tPrint('welcome to <span class="t-cmd">kevin.lin</span> v3.0 — interactive portfolio shell');
   tPrint('type <span class="t-cmd">help</span> to see available commands.');
+})();
+</script>
+<script>
+(function() {
+  var wrap = document.getElementById('resumeWrap'), btn = document.getElementById('resumeBtn');
+  if (!wrap || !btn) return;
+  function setOpen(o) { wrap.classList.toggle('open', o); btn.setAttribute('aria-expanded', o ? 'true' : 'false'); }
+  btn.addEventListener('click', function(e) { e.stopPropagation(); setOpen(!wrap.classList.contains('open')); if (wrap.classList.contains('open')) wrap.querySelector('.resume-menu a').focus(); });
+  document.addEventListener('click', function(e) { if (!wrap.contains(e.target)) setOpen(false); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && wrap.classList.contains('open')) { setOpen(false); btn.focus(); } });
+  wrap.querySelectorAll('.resume-menu a').forEach(function(a) { a.addEventListener('click', function() { setOpen(false); }); });
 })();
 </script>
 </body>
